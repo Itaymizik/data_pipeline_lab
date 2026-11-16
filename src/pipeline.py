@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 def summarize(input_path: Path, delay: float = 0.0, min_confidence: float = 0.0) -> dict:
+    """Count detections and categories from a CSV file."""
     if not 0.0 <= min_confidence <= 1.0:
         raise ValueError("min_confidence must be between 0 and 1")
-    """Count detections and categories from a CSV file."""
     count = 0
     by_label = {}
     with input_path.open(newline="", encoding="utf-8") as source:
