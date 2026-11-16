@@ -1,0 +1,6 @@
+frame_id,label,confidence
+1,person,0.95
+1,vehicle,0.31
+2,person,0.70
+3,animal,0.45
+4,vehicle,0.83
