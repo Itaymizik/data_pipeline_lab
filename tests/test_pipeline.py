@@ -3,6 +3,8 @@ import csv
 import pytest
 
 from src.pipeline import summarize
+from pathlib import Path
+
 
 
 def write_csv(path, rows):
@@ -27,3 +29,44 @@ def test_reject_invalid_confidence(tmp_path):
     write_csv(source, [{"frame_id": "1", "label": "person", "confidence": "1.5"}])
     with pytest.raises(ValueError, match="Invalid confidence"):
         summarize(source)
+
+
+def test_min_confidence_filter():
+    result = summarize(
+        Path("data/detections.csv"),
+        min_confidence=0.5
+    )
+
+    assert result["total_detections"] == 3
+    assert result["by_label"]["person"] == 2
+    assert result["by_label"]["vehicle"] == 1
+
+def test_invalid_min_confidence():
+    with pytest.raises(ValueError, match="min_confidence"):
+        summarize(
+            Path("data/detections.csv"),
+            min_confidence=1.5
+        )
+
+def test_confidence_equal_to_threshold(tmp_path):
+    source = tmp_path / "detections.csv"
+
+    write_csv(source, [
+        {"frame_id": "1", "label": "person", "confidence": "0.5"}
+    ])
+
+    result = summarize(source, min_confidence=0.5)
+
+    assert result["total_detections"] == 1
+    assert result["by_label"] == {"person": 1}
+
+
+def test_invalid_label_below_threshold(tmp_path):
+    source = tmp_path / "detections.csv"
+
+    write_csv(source, [
+        {"frame_id": "1", "label": "", "confidence": "0.2"}
+    ])
+
+    with pytest.raises(ValueError, match="Label must not be empty"):
+        summarize(source, min_confidence=0.5)
