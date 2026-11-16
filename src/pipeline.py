@@ -14,6 +14,7 @@ def summarize(input_path: Path, delay: float = 0.0, min_confidence: float = 0.0)
     """Count detections and categories from a CSV file."""
     if not 0.0 <= min_confidence <= 1.0:
         raise ValueError("min_confidence must be between 0 and 1")
+
     count = 0
     by_label = {}
     with input_path.open(newline="", encoding="utf-8") as source:
@@ -23,13 +24,14 @@ def summarize(input_path: Path, delay: float = 0.0, min_confidence: float = 0.0)
             raise ValueError(f"CSV must contain columns: {sorted(expected)}")
         for row in reader:
             confidence = float(row["confidence"])
+
             if not 0.0 <= confidence <= 1.0:
                 raise ValueError(f"Invalid confidence: {confidence}")
-            if confidence < min_confidence:
-                continue
             label = row["label"].strip()
             if not label:
                 raise ValueError("Label must not be empty")
+            if confidence < min_confidence:
+                continue
             count += 1
             by_label[label] = by_label.get(label, 0) + 1
             if delay:

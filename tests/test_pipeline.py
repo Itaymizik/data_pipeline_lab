@@ -47,3 +47,26 @@ def test_invalid_min_confidence():
             Path("data/detections.csv"),
             min_confidence=1.5
         )
+
+def test_confidence_equal_to_threshold(tmp_path):
+    source = tmp_path / "detections.csv"
+
+    write_csv(source, [
+        {"frame_id": "1", "label": "person", "confidence": "0.5"}
+    ])
+
+    result = summarize(source, min_confidence=0.5)
+
+    assert result["total_detections"] == 1
+    assert result["by_label"] == {"person": 1}
+
+
+def test_invalid_label_below_threshold(tmp_path):
+    source = tmp_path / "detections.csv"
+
+    write_csv(source, [
+        {"frame_id": "1", "label": "", "confidence": "0.2"}
+    ])
+
+    with pytest.raises(ValueError, match="Label must not be empty"):
+        summarize(source, min_confidence=0.5)
